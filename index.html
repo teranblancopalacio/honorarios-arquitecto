@@ -67,7 +67,7 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                 <h2 class="text-xl font-semibold mb-6 text-slate-800 flex items-center">
                     <svg class="w-5 h-5 mr-2 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                    Presupuesto de Ejecución Material (PEM)
+                    Presupuesto de Obra
                 </h2>
 
                 <div class="flex space-x-2 bg-slate-100 p-1.5 rounded-xl mb-6 border border-slate-200">
@@ -90,10 +90,10 @@
                 <!-- Modo Calculado -->
                 <div id="mode-calculado" class="space-y-4">
                     
-                    <!-- Vivienda -->
+                    <!-- Obra Cerrada -->
                     <div class="border border-slate-100 rounded-xl p-4 bg-slate-50/50 hover:bg-slate-50 transition">
                         <div class="flex justify-between items-center border-b border-slate-200 pb-2 mb-3">
-                            <h3 class="font-medium text-slate-800">Vivienda</h3>
+                            <h3 class="font-medium text-slate-800">Obra Cerrada</h3>
                             <span class="text-sm font-bold text-brand-600" id="subtotal_viv">0,00 €</span>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
@@ -200,7 +200,7 @@
                     <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-brand-600 rounded-full opacity-50 blur-2xl"></div>
                     
                     <h2 class="text-brand-100 text-lg font-medium mb-1">Total Honorarios (Netos)</h2>
-                    <p class="text-sm text-brand-100 mb-4" id="total_percentage_text">0,00 % s/PEM</p>
+                    <p class="text-sm text-brand-100 mb-4" id="total_percentage_text">0,00 % s/PEC</p>
                     
                     <div class="text-5xl lg:text-6xl font-bold tracking-tight mb-6" id="total_honorarios">
                         0,00 €
@@ -383,7 +383,7 @@
                 document.getElementById('subtotal_gar').innerText = formatCurrency(pemGar);
                 document.getElementById('subtotal_otros').innerText = formatCurrency(urb + pis);
 
-                auditPemText = `<p class="text-slate-400">Vivienda: <span class="text-white">${vivM2} m² × ${vivPrice} €/m²</span> = <span class="text-white font-bold">${formatCurrency(pemViv)}</span></p>`;
+                auditPemText = `<p class="text-slate-400">Obra Cerrada: <span class="text-white">${vivM2} m² × ${vivPrice} €/m²</span> = <span class="text-white font-bold">${formatCurrency(pemViv)}</span></p>`;
                 if(porM2 > 0) auditPemText += `<p class="text-slate-400">Porches: <span class="text-white">${porM2} m² × ${porPrice} €/m²</span> = <span class="text-white font-bold">${formatCurrency(pemPor)}</span></p>`;
                 if(garM2 > 0) auditPemText += `<p class="text-slate-400">Garajes: <span class="text-white">${garM2} m² × ${garPrice} €/m²</span> = <span class="text-white font-bold">${formatCurrency(pemGar)}</span></p>`;
                 if(urb > 0) auditPemText += `<p class="text-slate-400">Urbanización: <span class="text-white font-bold">${formatCurrency(urb)}</span></p>`;
@@ -401,7 +401,7 @@
 
             document.getElementById('res_pem').innerText = formatCurrency(pem);
             document.getElementById('total_honorarios').innerText = formatCurrency(total);
-            document.getElementById('total_percentage_text').innerText = `${formatPercent(totalPercentage)} s/PEM`;
+            document.getElementById('total_percentage_text').innerText = `${formatPercent(totalPercentage)} s/PEC`;
             document.getElementById('res_basico').innerText = formatCurrency(hBasico);
             document.getElementById('res_ejecucion').innerText = formatCurrency(hEjecucion);
             document.getElementById('res_direccion').innerText = formatCurrency(hDireccion);
