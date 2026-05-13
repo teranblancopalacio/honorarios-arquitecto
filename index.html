@@ -71,16 +71,16 @@
                 </h2>
 
                 <div class="flex space-x-2 bg-slate-100 p-1.5 rounded-xl mb-6 border border-slate-200">
-                    <button onclick="setPemMode('calculado')" id="tab-calculado" class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-brand-700 shadow-sm border border-slate-200 transition">Calculado por m²</button>
-                    <button onclick="setPemMode('manual')" id="tab-manual" class="flex-1 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition">Entrada Manual</button>
+                    <button onclick="setPECMode('calculado')" id="tab-calculado" class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-brand-700 shadow-sm border border-slate-200 transition">Calculado por m²</button>
+                    <button onclick="setPECMode('manual')" id="tab-manual" class="flex-1 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition">Entrada Manual</button>
                 </div>
 
                 <!-- Modo Manual -->
                 <div id="mode-manual" class="hidden">
                     <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-1">PEM Total de la Obra</label>
+                        <label class="block text-sm font-medium text-slate-600 mb-1">PEC Total de la Obra</label>
                         <div class="relative">
-                            <input type="text" id="pem_manual" value="300.000" class="w-full rounded-lg border-slate-300 border p-2.5 pr-8 focus:ring-2 focus:ring-brand-500 outline-none bg-slate-50 transition font-semibold" oninput="formatAndCalc(this)">
+                            <input type="text" id="PEC_manual" value="300.000" class="w-full rounded-lg border-slate-300 border p-2.5 pr-8 focus:ring-2 focus:ring-brand-500 outline-none bg-slate-50 transition font-semibold" oninput="formatAndCalc(this)">
                             <span class="absolute right-3 top-2.5 text-slate-400">€</span>
                         </div>
                         <p class="text-xs text-slate-500 mt-2">Introduzca el Presupuesto de Ejecución Material total de forma directa.</p>
@@ -207,8 +207,8 @@
                     </div>
 
                     <div class="border-t border-brand-600 pt-6">
-                        <p class="text-brand-100 text-sm mb-1">PEM Considerado</p>
-                        <p class="text-2xl font-semibold" id="res_pem">0,00 €</p>
+                        <p class="text-brand-100 text-sm mb-1">PEC Considerado</p>
+                        <p class="text-2xl font-semibold" id="res_PEC">0,00 €</p>
                         <p class="text-xs text-brand-100 mt-1 opacity-80" id="print-date"></p>
                     </div>
                 </div>
@@ -250,11 +250,11 @@
             </h3>
             
             <div id="audit-content" class="hidden grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 print:grid">
-                <!-- Columna 1: PEM -->
+                <!-- Columna 1: PEC -->
                 <div class="space-y-4">
                     <div class="bg-slate-800 p-4 rounded-lg shadow-inner">
-                        <p class="text-brand-400 font-bold mb-3">1. Cálculo del Presupuesto (PEM)</p>
-                        <div id="audit-pem-details" class="space-y-2 text-sm leading-relaxed"></div>
+                        <p class="text-brand-400 font-bold mb-3">1. Cálculo del Presupuesto (PEC)</p>
+                        <div id="audit-PEC-details" class="space-y-2 text-sm leading-relaxed"></div>
                     </div>
                 </div>
 
@@ -296,10 +296,10 @@
             { desde: 26136000, hasta: 999999999, basico: 1.68, ejecucion: 1.52, direccion: 1.51, final: 0.42 }
         ];
 
-        let currentPemMode = 'calculado';
+        let currentPECMode = 'calculado';
 
-        function setPemMode(mode) {
-            currentPemMode = mode;
+        function setPECMode(mode) {
+            currentPECMode = mode;
             document.getElementById('mode-manual').classList.toggle('hidden', mode !== 'manual');
             document.getElementById('mode-calculado').classList.toggle('hidden', mode !== 'calculado');
             
@@ -357,12 +357,12 @@
         }
 
         function calculate() {
-            let pem = 0;
-            let auditPemText = "";
+            let PEC = 0;
+            let auditPECText = "";
 
-            if (currentPemMode === 'manual') {
-                pem = getNum('pem_manual');
-                auditPemText = `<p class="text-slate-400">Presupuesto definido de forma manual:</p><p class="text-brand-300 text-lg font-bold mt-1">${formatCurrency(pem)}</p>`;
+            if (currentPECMode === 'manual') {
+                PEC = getNum('PEC_manual');
+                auditPECText = `<p class="text-slate-400">Presupuesto definido de forma manual:</p><p class="text-brand-300 text-lg font-bold mt-1">${formatCurrency(PEC)}</p>`;
             } else {
                 const vivM2 = getNum('sup_viv');
                 const vivPrice = getNum('cost_viv');
@@ -373,33 +373,33 @@
                 const urb = getNum('cost_urb');
                 const pis = getNum('cost_pis');
 
-                const pemViv = vivM2 * vivPrice;
-                const pemPor = porM2 * porPrice;
-                const pemGar = garM2 * garPrice;
-                pem = pemViv + pemPor + pemGar + urb + pis;
+                const PECViv = vivM2 * vivPrice;
+                const PECPor = porM2 * porPrice;
+                const PECGar = garM2 * garPrice;
+                PEC = PECViv + PECPor + PECGar + urb + pis;
 
-                document.getElementById('subtotal_viv').innerText = formatCurrency(pemViv);
-                document.getElementById('subtotal_por').innerText = formatCurrency(pemPor);
-                document.getElementById('subtotal_gar').innerText = formatCurrency(pemGar);
+                document.getElementById('subtotal_viv').innerText = formatCurrency(PECViv);
+                document.getElementById('subtotal_por').innerText = formatCurrency(PECPor);
+                document.getElementById('subtotal_gar').innerText = formatCurrency(PECGar);
                 document.getElementById('subtotal_otros').innerText = formatCurrency(urb + pis);
 
-                auditPemText = `<p class="text-slate-400">Obra Cerrada: <span class="text-white">${vivM2} m² × ${vivPrice} €/m²</span> = <span class="text-white font-bold">${formatCurrency(pemViv)}</span></p>`;
-                if(porM2 > 0) auditPemText += `<p class="text-slate-400">Porches: <span class="text-white">${porM2} m² × ${porPrice} €/m²</span> = <span class="text-white font-bold">${formatCurrency(pemPor)}</span></p>`;
-                if(garM2 > 0) auditPemText += `<p class="text-slate-400">Garajes: <span class="text-white">${garM2} m² × ${garPrice} €/m²</span> = <span class="text-white font-bold">${formatCurrency(pemGar)}</span></p>`;
-                if(urb > 0) auditPemText += `<p class="text-slate-400">Urbanización: <span class="text-white font-bold">${formatCurrency(urb)}</span></p>`;
-                if(pis > 0) auditPemText += `<p class="text-slate-400">Piscina: <span class="text-white font-bold">${formatCurrency(pis)}</span></p>`;
-                auditPemText += `<div class="mt-4 pt-3 border-t border-slate-700 font-bold text-white">Suma Total PEM: <span class="text-brand-300 text-base">${formatCurrency(pem)}</span></div>`;
+                auditPECText = `<p class="text-slate-400">Obra Cerrada: <span class="text-white">${vivM2} m² × ${vivPrice} €/m²</span> = <span class="text-white font-bold">${formatCurrency(PECViv)}</span></p>`;
+                if(porM2 > 0) auditPECText += `<p class="text-slate-400">Porches: <span class="text-white">${porM2} m² × ${porPrice} €/m²</span> = <span class="text-white font-bold">${formatCurrency(PECPor)}</span></p>`;
+                if(garM2 > 0) auditPECText += `<p class="text-slate-400">Garajes: <span class="text-white">${garM2} m² × ${garPrice} €/m²</span> = <span class="text-white font-bold">${formatCurrency(PECGar)}</span></p>`;
+                if(urb > 0) auditPECText += `<p class="text-slate-400">Urbanización: <span class="text-white font-bold">${formatCurrency(urb)}</span></p>`;
+                if(pis > 0) auditPECText += `<p class="text-slate-400">Piscina: <span class="text-white font-bold">${formatCurrency(pis)}</span></p>`;
+                auditPECText += `<div class="mt-4 pt-3 border-t border-slate-700 font-bold text-white">Suma Total PEC: <span class="text-brand-300 text-base">${formatCurrency(PEC)}</span></div>`;
             }
 
-            const row = feeTable.find(r => pem >= r.desde && pem < r.hasta) || feeTable[feeTable.length - 1];
-            const hBasico = pem * (row.basico / 100);
-            const hEjecucion = pem * (row.ejecucion / 100);
-            const hDireccion = pem * (row.direccion / 100);
-            const hFinal = pem * (row.final / 100);
+            const row = feeTable.find(r => PEC >= r.desde && PEC < r.hasta) || feeTable[feeTable.length - 1];
+            const hBasico = PEC * (row.basico / 100);
+            const hEjecucion = PEC * (row.ejecucion / 100);
+            const hDireccion = PEC * (row.direccion / 100);
+            const hFinal = PEC * (row.final / 100);
             const total = hBasico + hEjecucion + hDireccion + hFinal;
-            const totalPercentage = pem > 0 ? (total / pem) * 100 : 0;
+            const totalPercentage = PEC > 0 ? (total / PEC) * 100 : 0;
 
-            document.getElementById('res_pem').innerText = formatCurrency(pem);
+            document.getElementById('res_PEC').innerText = formatCurrency(PEC);
             document.getElementById('total_honorarios').innerText = formatCurrency(total);
             document.getElementById('total_percentage_text').innerText = `${formatPercent(totalPercentage)} s/PEC`;
             document.getElementById('res_basico').innerText = formatCurrency(hBasico);
@@ -407,7 +407,7 @@
             document.getElementById('res_direccion').innerText = formatCurrency(hDireccion);
             document.getElementById('res_final').innerText = formatCurrency(hFinal);
 
-            document.getElementById('audit-pem-details').innerHTML = auditPemText;
+            document.getElementById('audit-PEC-details').innerHTML = auditPECText;
             document.getElementById('audit-fees-details').innerHTML = `
                 <div class="border border-slate-700 p-3 rounded-lg mb-4">
                     <p class="text-slate-400 text-xs mb-1">Tramo Aplicado:</p>
@@ -421,22 +421,22 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div class="bg-slate-900 p-3 rounded border border-slate-800">
                         <p class="text-slate-400 text-xs mb-1">P. Básico (${formatPercent(row.basico)})</p>
-                        <p class="text-xs text-white">${formatCurrency(pem)} × ${row.basico/100}</p>
+                        <p class="text-xs text-white">${formatCurrency(PEC)} × ${row.basico/100}</p>
                         <p class="text-brand-300 font-bold mt-1">${formatCurrency(hBasico)}</p>
                     </div>
                     <div class="bg-slate-900 p-3 rounded border border-slate-800">
                         <p class="text-slate-400 text-xs mb-1">P. Ejecución (${formatPercent(row.ejecucion)})</p>
-                        <p class="text-xs text-white">${formatCurrency(pem)} × ${row.ejecucion/100}</p>
+                        <p class="text-xs text-white">${formatCurrency(PEC)} × ${row.ejecucion/100}</p>
                         <p class="text-brand-300 font-bold mt-1">${formatCurrency(hEjecucion)}</p>
                     </div>
                     <div class="bg-slate-900 p-3 rounded border border-slate-800">
                         <p class="text-slate-400 text-xs mb-1">D. Obra (${formatPercent(row.direccion)})</p>
-                        <p class="text-xs text-white">${formatCurrency(pem)} × ${row.direccion/100}</p>
+                        <p class="text-xs text-white">${formatCurrency(PEC)} × ${row.direccion/100}</p>
                         <p class="text-brand-300 font-bold mt-1">${formatCurrency(hDireccion)}</p>
                     </div>
                     <div class="bg-slate-900 p-3 rounded border border-slate-800">
                         <p class="text-slate-400 text-xs mb-1">Doc. Final (${formatPercent(row.final)})</p>
-                        <p class="text-xs text-white">${formatCurrency(pem)} × ${row.final/100}</p>
+                        <p class="text-xs text-white">${formatCurrency(PEC)} × ${row.final/100}</p>
                         <p class="text-brand-300 font-bold mt-1">${formatCurrency(hFinal)}</p>
                     </div>
                 </div>
