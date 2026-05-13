@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Honorarios Arquitecto | Terán Blanco Palacio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 900: '#0c4a6e' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        
+        /* Reglas específicas para la generación del PDF */
+        @media print {
+            .no-print { display: none !important; }
+            * { 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
+            }
+            body { background-color: white !important; }
+            main { display: block !important; } /* Apila las columnas para formato A4 */
+            .lg\:col-span-7, .lg\:col-span-5, .lg\:col-span-12 { 
+                margin-bottom: 2rem !important; 
+                page-break-inside: avoid;
+            }
+            #audit-content { display: grid !important; } /* Fuerza a que la auditoría salga siempre en el PDF */
+            .shadow-sm, .shadow-lg { box-shadow: none !important; border: 1px solid #e2e8f0; }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen pb-12">
+
+    <header class="bg-brand-900 text-white py-8 shadow-md">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-2 sm:gap-0">
+            <h1 class="text-3xl font-bold tracking-tight">Cálculo de Honorarios</h1>
+            <a href="https://teranblancopalacio.com" target="_blank" rel="noopener noreferrer" class="text-brand-100 text-lg no-underline hover:text-white transition-colors">
+                teranblancopalacio.com
+            </a>
+        </div>
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <p class="text-brand-100 text-lg">Estimación de honorarios profesionales según presupuesto de obra.</p>
+            
+            <!-- Botón de Generar PDF -->
+            <button onclick="window.print()" class="no-print bg-white text-brand-900 px-5 py-2.5 rounded-lg shadow-sm font-semibold text-sm hover:bg-brand-50 transition flex items-center w-fit">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Generar Informe PDF
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Columna Izquierda: Entradas -->
+        <div class="lg:col-span-7 space-y-6">
+            
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <h2 class="text-xl font-semibold mb-6 text-slate-800 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    Presupuesto de Ejecución Material (PEM)
+                </h2>
+
+                <div class="flex space-x-2 bg-slate-100 p-1.5 rounded-xl mb-6 border border-slate-200">
+                    <button onclick="setPemMode('calculado')" id="tab-calculado" class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-brand-700 shadow-sm border border-slate-200 transition">Calculado por m²</button>
+                    <button onclick="setPemMode('manual')" id="tab-manual" class="flex-1 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition">Entrada Manual</button>
+                </div>
+
+                <!-- Modo Manual -->
+                <div id="mode-manual" class="hidden">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1">PEM Total de la Obra</label>
+                        <div class="relative">
+                            <input type="text" id="pem_manual" value="300.000" class="w-full rounded-lg border-slate-300 border p-2.5 pr-8 focus:ring-2 focus:ring-brand-500 outline-none bg-slate-50 transition font-semibold" oninput="formatAndCalc(this)">
+                            <span class="absolute right-3 top-2.5 text-slate-400">€</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-2">Introduzca el Presupuesto de Ejecución Material total de forma directa.</p>
+                    </div>
+                </div>
+
+                <!-- Modo Calculado -->
+                <div id="mode-calculado" class="space-y-4">
+                    
+                    <!-- Vivienda -->
+                    <div class="border border-slate-100 rounded-xl p-4 bg-slate-50/50 hover:bg-slate-50 transition">
+                        <div class="flex justify-between items-center border-b border-slate-200 pb-2 mb-3">
+                            <h3 class="font-medium text-slate-800">Vivienda</h3>
+                            <span class="text-sm font-bold text-brand-600" id="subtotal_viv">0,00 €</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Superficie</label>
+                                <div class="relative">
+                                    <input type="text" id="sup_viv" value="150" class="w-full rounded-lg border-slate-300 border p-2.5 pr-8 focus:ring-2 focus:ring-brand-500 outline-none bg-white transition" oninput="formatAndCalc(this)">
+                                    <span class="absolute right-3 top-2.5 text-slate-400 text-sm">m²</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Precio Unitario</label>
+                                <div class="relative">
+                                    <input type="text" id="cost_viv" value="2.200" class="w-full rounded-lg border-slate-300 border p-2.5 pr-12 focus:ring-2 focus:ring-brand-500 outline-none bg-white transition" oninput="formatAndCalc(this)">
+                                    <span class="absolute right-3 top-2.5 text-slate-400 text-sm">€/m²</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Porches -->
+                    <div class="border border-slate-100 rounded-xl p-4 bg-slate-50/50 hover:bg-slate-50 transition">
+                        <div class="flex justify-between items-center border-b border-slate-200 pb-2 mb-3">
+                            <h3 class="font-medium text-slate-800">Porches y Terrazas</h3>
+                            <span class="text-sm font-bold text-brand-600" id="subtotal_por">0,00 €</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Superficie</label>
+                                <div class="relative">
+                                    <input type="text" id="sup_por" value="0" class="w-full rounded-lg border-slate-300 border p-2.5 pr-8 focus:ring-2 focus:ring-brand-500 outline-none bg-white transition" oninput="formatAndCalc(this)">
+                                    <span class="absolute right-3 top-2.5 text-slate-400 text-sm">m²</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Precio Unitario</label>
+                                <div class="relative">
+                                    <input type="text" id="cost_por" value="800" class="w-full rounded-lg border-slate-300 border p-2.5 pr-12 focus:ring-2 focus:ring-brand-500 outline-none bg-white transition" oninput="formatAndCalc(this)">
+                                    <span class="absolute right-3 top-2.5 text-slate-400 text-sm">€/m²</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Garajes -->
+                    <div class="border border-slate-100 rounded-xl p-4 bg-slate-50/50 hover:bg-slate-50 transition">
+                        <div class="flex justify-between items-center border-b border-slate-200 pb-2 mb-3">
+                            <h3 class="font-medium text-slate-800">Garajes</h3>
+                            <span class="text-sm font-bold text-brand-600" id="subtotal_gar">0,00 €</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Superficie</label>
+                                <div class="relative">
+                                    <input type="text" id="sup_gar" value="0" class="w-full rounded-lg border-slate-300 border p-2.5 pr-8 focus:ring-2 focus:ring-brand-500 outline-none bg-white transition" oninput="formatAndCalc(this)">
+                                    <span class="absolute right-3 top-2.5 text-slate-400 text-sm">m²</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Precio Unitario</label>
+                                <div class="relative">
+                                    <input type="text" id="cost_gar" value="1.000" class="w-full rounded-lg border-slate-300 border p-2.5 pr-12 focus:ring-2 focus:ring-brand-500 outline-none bg-white transition" oninput="formatAndCalc(this)">
+                                    <span class="absolute right-3 top-2.5 text-slate-400 text-sm">€/m²</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Urbanización y Piscina -->
+                    <div class="border border-slate-100 rounded-xl p-4 bg-slate-50/50 hover:bg-slate-50 transition">
+                        <div class="flex justify-between items-center border-b border-slate-200 pb-2 mb-3">
+                            <h3 class="font-medium text-slate-800">Otros (Global)</h3>
+                            <span class="text-sm font-bold text-brand-600" id="subtotal_otros">0,00 €</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Urbanización</label>
+                                <div class="relative">
+                                    <input type="text" id="cost_urb" value="0" class="w-full rounded-lg border-slate-300 border p-2.5 pr-8 focus:ring-2 focus:ring-brand-500 outline-none bg-white transition" oninput="formatAndCalc(this)">
+                                    <span class="absolute right-3 top-2.5 text-slate-400 text-sm">€</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Piscina</label>
+                                <div class="relative">
+                                    <input type="text" id="cost_pis" value="0" class="w-full rounded-lg border-slate-300 border p-2.5 pr-8 focus:ring-2 focus:ring-brand-500 outline-none bg-white transition" oninput="formatAndCalc(this)">
+                                    <span class="absolute right-3 top-2.5 text-slate-400 text-sm">€</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Columna Derecha: Resultados -->
+        <div class="lg:col-span-5 space-y-6 relative">
+            <div class="sticky top-6">
+                <!-- Dashboard Principal -->
+                <div class="bg-brand-900 rounded-3xl shadow-lg p-8 text-white relative overflow-hidden mb-6">
+                    <!-- Decorative background -->
+                    <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-brand-600 rounded-full opacity-50 blur-2xl"></div>
+                    
+                    <h2 class="text-brand-100 text-lg font-medium mb-1">Total Honorarios (Netos)</h2>
+                    <p class="text-sm text-brand-100 mb-4" id="total_percentage_text">0,00 % s/PEM</p>
+                    
+                    <div class="text-5xl lg:text-6xl font-bold tracking-tight mb-6" id="total_honorarios">
+                        0,00 €
+                    </div>
+
+                    <div class="border-t border-brand-600 pt-6">
+                        <p class="text-brand-100 text-sm mb-1">PEM Considerado</p>
+                        <p class="text-2xl font-semibold" id="res_pem">0,00 €</p>
+                        <p class="text-xs text-brand-100 mt-1 opacity-80" id="print-date"></p>
+                    </div>
+                </div>
+
+                <!-- Desglose de Fases -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 class="text-lg font-semibold text-slate-800 mb-4 border-b pb-2">Desglose por Fases</h3>
+                    
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                            <span class="text-slate-600 font-medium">Proyecto Básico</span>
+                            <span class="font-semibold text-slate-800" id="res_basico">0,00 €</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                            <span class="text-slate-600 font-medium">Proyecto de Ejecución</span>
+                            <span class="font-semibold text-slate-800" id="res_ejecucion">0,00 €</span>
+                        </div>
+
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                            <span class="text-slate-600 font-medium">Dirección de Obra</span>
+                            <span class="font-semibold text-slate-800" id="res_direccion">0,00 €</span>
+                        </div>
+
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                            <span class="text-slate-600 font-medium">Documentación Final</span>
+                            <span class="font-semibold text-slate-800" id="res_final">0,00 €</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de Desglose Matemático (Debug / Auditoría) -->
+        <div class="lg:col-span-12 bg-slate-900 text-slate-300 p-6 rounded-2xl shadow-sm mt-4 border border-slate-800 font-mono text-sm transition-all duration-300">
+            <h3 class="text-lg font-semibold text-white mb-4 border-b border-slate-700 pb-2 flex items-center justify-between">
+                <span>Panel de Auditoría Matemática</span>
+                <button onclick="toggleAudit()" class="no-print text-xs bg-brand-600 hover:bg-brand-500 text-white font-sans px-3 py-1.5 rounded transition shadow">Ocultar / Mostrar Detalle</button>
+            </h3>
+            
+            <div id="audit-content" class="hidden grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 print:grid">
+                <!-- Columna 1: PEM -->
+                <div class="space-y-4">
+                    <div class="bg-slate-800 p-4 rounded-lg shadow-inner">
+                        <p class="text-brand-400 font-bold mb-3">1. Cálculo del Presupuesto (PEM)</p>
+                        <div id="audit-pem-details" class="space-y-2 text-sm leading-relaxed"></div>
+                    </div>
+                </div>
+
+                <!-- Columna 2: Honorarios -->
+                <div class="space-y-4">
+                    <div class="bg-slate-800 p-4 rounded-lg shadow-inner">
+                        <p class="text-brand-400 font-bold mb-3">2. Desglose de Honorarios Profesionales</p>
+                        <div id="audit-fees-details" class="space-y-4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="max-w-6xl mx-auto px-4 mt-8 pb-8 no-print text-center">
+        <p class="text-slate-400 text-xs font-medium">© 2026 Terán Blanco Palacio Arquitectos</p>
+    </footer>
+
+    <script>
+        const feeTable = [
+            { desde: 0, hasta: 21780, basico: 4.00, ejecucion: 3.60, direccion: 3.60, final: 1.00 },
+            { desde: 21780, hasta: 43560, basico: 3.80, ejecucion: 3.42, direccion: 3.42, final: 0.95 },
+            { desde: 43560, hasta: 72600, basico: 3.48, ejecucion: 3.13, direccion: 3.13, final: 0.87 },
+            { desde: 72600, hasta: 174240, basico: 3.20, ejecucion: 2.88, direccion: 2.88, final: 0.80 },
+            { desde: 174240, hasta: 263175, basico: 3.00, ejecucion: 2.70, direccion: 2.70, final: 0.75 },
+            { desde: 263175, hasta: 344850, basico: 2.88, ejecucion: 2.59, direccion: 2.59, final: 0.72 },
+            { desde: 344850, hasta: 435600, basico: 2.76, ejecucion: 2.49, direccion: 2.48, final: 0.69 },
+            { desde: 435600, hasta: 871200, basico: 2.60, ejecucion: 2.34, direccion: 2.34, final: 0.65 },
+            { desde: 871200, hasta: 1306800, basico: 2.44, ejecucion: 2.19, direccion: 2.20, final: 0.61 },
+            { desde: 1306800, hasta: 1742400, basico: 2.32, ejecucion: 2.09, direccion: 2.09, final: 0.58 },
+            { desde: 1742400, hasta: 2613600, basico: 2.24, ejecucion: 2.01, direccion: 2.02, final: 0.56 },
+            { desde: 2613600, hasta: 3484800, basico: 2.16, ejecucion: 1.95, direccion: 1.94, final: 0.54 },
+            { desde: 3484800, hasta: 4356000, basico: 2.08, ejecucion: 1.88, direccion: 1.87, final: 0.52 },
+            { desde: 4356000, hasta: 8712000, basico: 2.00, ejecucion: 1.80, direccion: 1.80, final: 0.50 },
+            { desde: 8712000, hasta: 13068000, basico: 1.92, ejecucion: 1.73, direccion: 1.73, final: 0.48 },
+            { desde: 13068000, hasta: 17424000, basico: 1.84, ejecucion: 1.66, direccion: 1.66, final: 0.46 },
+            { desde: 17424000, hasta: 26136000, basico: 1.76, ejecucion: 1.59, direccion: 1.58, final: 0.44 },
+            { desde: 26136000, hasta: 999999999, basico: 1.68, ejecucion: 1.52, direccion: 1.51, final: 0.42 }
+        ];
+
+        let currentPemMode = 'calculado';
+
+        function setPemMode(mode) {
+            currentPemMode = mode;
+            document.getElementById('mode-manual').classList.toggle('hidden', mode !== 'manual');
+            document.getElementById('mode-calculado').classList.toggle('hidden', mode !== 'calculado');
+            
+            const tabManual = document.getElementById('tab-manual');
+            const tabCalc = document.getElementById('tab-calculado');
+
+            if (mode === 'manual') {
+                tabManual.className = "flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-brand-700 shadow-sm border border-slate-200 transition";
+                tabCalc.className = "flex-1 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition";
+            } else {
+                tabCalc.className = "flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-brand-700 shadow-sm border border-slate-200 transition";
+                tabManual.className = "flex-1 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition";
+            }
+            calculate();
+        }
+
+        function toggleAudit() {
+            const content = document.getElementById('audit-content');
+            content.classList.toggle('hidden');
+        }
+
+        const formatCurrency = (val) => {
+            const parts = val.toFixed(2).split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            return parts.join(',') + ' €';
+        };
+        const formatPercent = (val) => val.toFixed(2).replace('.', ',') + ' %';
+
+        function formatAndCalc(input) {
+            let cursorStart = input.selectionStart;
+            let prevLength = input.value.length;
+            let val = input.value.replace(/[^\d,]/g, ''); 
+            let parts = val.split(',');
+            if (parts.length > 2) val = parts[0] + ',' + parts.slice(1).join('');
+
+            if(val !== '') {
+                let integerPart = parts[0];
+                let decimalPart = parts.length > 1 ? ',' + parts[1] : '';
+                if (integerPart !== '') integerPart = new Intl.NumberFormat('es-ES').format(integerPart.replace(/\./g, ''));
+                input.value = integerPart + decimalPart;
+            } else {
+                input.value = '';
+            }
+
+            let newLength = input.value.length;
+            cursorStart += (newLength - prevLength);
+            input.setSelectionRange(cursorStart, cursorStart);
+            calculate();
+        }
+
+        function getNum(id) {
+            let val = document.getElementById(id).value;
+            val = val.replace(/\./g, '').replace(',', '.');
+            return parseFloat(val) || 0;
+        }
+
+        function calculate() {
+            let pem = 0;
+            let auditPemText = "";
+
+            if (currentPemMode === 'manual') {
+                pem = getNum('pem_manual');
+                auditPemText = `<p class="text-slate-400">Presupuesto definido de forma manual:</p><p class="text-brand-300 text-lg font-bold mt-1">${formatCurrency(pem)}</p>`;
+            } else {
+                const vivM2 = getNum('sup_viv');
+                const vivPrice = getNum('cost_viv');
+                const porM2 = getNum('sup_por');
+                const porPrice = getNum('cost_por');
+                const garM2 = getNum('sup_gar');
+                const garPrice = getNum('cost_gar');
+                const urb = getNum('cost_urb');
+                const pis = getNum('cost_pis');
+
+                const pemViv = vivM2 * vivPrice;
+                const pemPor = porM2 * porPrice;
+                const pemGar = garM2 * garPrice;
+                pem = pemViv + pemPor + pemGar + urb + pis;
+
+                document.getElementById('subtotal_viv').innerText = formatCurrency(pemViv);
+                document.getElementById('subtotal_por').innerText = formatCurrency(pemPor);
+                document.getElementById('subtotal_gar').innerText = formatCurrency(pemGar);
+                document.getElementById('subtotal_otros').innerText = formatCurrency(urb + pis);
+
+                auditPemText = `<p class="text-slate-400">Vivienda: <span class="text-white">${vivM2} m² × ${vivPrice} €/m²</span> = <span class="text-white font-bold">${formatCurrency(pemViv)}</span></p>`;
+                if(porM2 > 0) auditPemText += `<p class="text-slate-400">Porches: <span class="text-white">${porM2} m² × ${porPrice} €/m²</span> = <span class="text-white font-bold">${formatCurrency(pemPor)}</span></p>`;
+                if(garM2 > 0) auditPemText += `<p class="text-slate-400">Garajes: <span class="text-white">${garM2} m² × ${garPrice} €/m²</span> = <span class="text-white font-bold">${formatCurrency(pemGar)}</span></p>`;
+                if(urb > 0) auditPemText += `<p class="text-slate-400">Urbanización: <span class="text-white font-bold">${formatCurrency(urb)}</span></p>`;
+                if(pis > 0) auditPemText += `<p class="text-slate-400">Piscina: <span class="text-white font-bold">${formatCurrency(pis)}</span></p>`;
+                auditPemText += `<div class="mt-4 pt-3 border-t border-slate-700 font-bold text-white">Suma Total PEM: <span class="text-brand-300 text-base">${formatCurrency(pem)}</span></div>`;
+            }
+
+            const row = feeTable.find(r => pem >= r.desde && pem < r.hasta) || feeTable[feeTable.length - 1];
+            const hBasico = pem * (row.basico / 100);
+            const hEjecucion = pem * (row.ejecucion / 100);
+            const hDireccion = pem * (row.direccion / 100);
+            const hFinal = pem * (row.final / 100);
+            const total = hBasico + hEjecucion + hDireccion + hFinal;
+            const totalPercentage = pem > 0 ? (total / pem) * 100 : 0;
+
+            document.getElementById('res_pem').innerText = formatCurrency(pem);
+            document.getElementById('total_honorarios').innerText = formatCurrency(total);
+            document.getElementById('total_percentage_text').innerText = `${formatPercent(totalPercentage)} s/PEM`;
+            document.getElementById('res_basico').innerText = formatCurrency(hBasico);
+            document.getElementById('res_ejecucion').innerText = formatCurrency(hEjecucion);
+            document.getElementById('res_direccion').innerText = formatCurrency(hDireccion);
+            document.getElementById('res_final').innerText = formatCurrency(hFinal);
+
+            document.getElementById('audit-pem-details').innerHTML = auditPemText;
+            document.getElementById('audit-fees-details').innerHTML = `
+                <div class="border border-slate-700 p-3 rounded-lg mb-4">
+                    <p class="text-slate-400 text-xs mb-1">Tramo Aplicado:</p>
+                    <div class="flex gap-4 text-sm font-bold text-white">
+                        <span>MIN: ${formatCurrency(row.desde)}</span>
+                        <span class="text-slate-600">|</span>
+                        <span>MAX: ${row.hasta > 100000000 ? '∞' : formatCurrency(row.hasta)}</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="bg-slate-900 p-3 rounded border border-slate-800">
+                        <p class="text-slate-400 text-xs mb-1">P. Básico (${formatPercent(row.basico)})</p>
+                        <p class="text-xs text-white">${formatCurrency(pem)} × ${row.basico/100}</p>
+                        <p class="text-brand-300 font-bold mt-1">${formatCurrency(hBasico)}</p>
+                    </div>
+                    <div class="bg-slate-900 p-3 rounded border border-slate-800">
+                        <p class="text-slate-400 text-xs mb-1">P. Ejecución (${formatPercent(row.ejecucion)})</p>
+                        <p class="text-xs text-white">${formatCurrency(pem)} × ${row.ejecucion/100}</p>
+                        <p class="text-brand-300 font-bold mt-1">${formatCurrency(hEjecucion)}</p>
+                    </div>
+                    <div class="bg-slate-900 p-3 rounded border border-slate-800">
+                        <p class="text-slate-400 text-xs mb-1">D. Obra (${formatPercent(row.direccion)})</p>
+                        <p class="text-xs text-white">${formatCurrency(pem)} × ${row.direccion/100}</p>
+                        <p class="text-brand-300 font-bold mt-1">${formatCurrency(hDireccion)}</p>
+                    </div>
+                    <div class="bg-slate-900 p-3 rounded border border-slate-800">
+                        <p class="text-slate-400 text-xs mb-1">Doc. Final (${formatPercent(row.final)})</p>
+                        <p class="text-xs text-white">${formatCurrency(pem)} × ${row.final/100}</p>
+                        <p class="text-brand-300 font-bold mt-1">${formatCurrency(hFinal)}</p>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-700 flex justify-between items-center">
+                    <span class="text-white font-bold">Suma Total Honorarios:</span>
+                    <span class="text-brand-300 font-bold text-base">${formatCurrency(total)}</span>
+                </div>
+            `;
+            document.getElementById('print-date').innerText = "Generado el " + new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }
+        window.onload = calculate;
+    </script>
+</body>
+</html>
